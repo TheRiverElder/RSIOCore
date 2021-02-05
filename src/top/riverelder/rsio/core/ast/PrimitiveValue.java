@@ -1,14 +1,11 @@
 package top.riverelder.rsio.core.ast;
 
-import top.riverelder.rsio.core.CompileEnvironment;
-import top.riverelder.rsio.core.Instructions;
+import top.riverelder.rsio.core.compile.Field;
+import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
-import top.riverelder.rsio.core.compile.Scope;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
-import top.riverelder.rsio.core.instruction.Instruction;
-import top.riverelder.rsio.core.instruction.Load;
-import top.riverelder.rsio.core.instruction.Push;
 import top.riverelder.rsio.core.token.Token;
+import top.riverelder.rsio.core.util.BufferedStringBuilder;
 
 import java.util.List;
 
@@ -22,12 +19,12 @@ public class PrimitiveValue extends AST {
     }
 
     @Override
-    public void toSource(StringBuilder builder) {
-        builder.append(token.getContent());
+    public void toSource(BufferedStringBuilder builder) {
+        builder.write(token.getContent());
     }
 
     @Override
-    public DataType getDataType(CompileEnvironment env) {
+    public DataType getDataType(NestedCompileEnvironment env) {
         switch (token.getType()) {
             case VARIABLE_NAME: return env.getField((String) token.getContent()).type;
             case INTEGER: return DataType.INTEGER;
@@ -39,37 +36,16 @@ public class PrimitiveValue extends AST {
     }
 
     @Override
-    public void toBytes(CompileEnvironment env) throws RSIOCompileException {
+    public void toAssemble(List<String> output, NestedCompileEnvironment env) throws RSIOCompileException {
         switch (token.getType()) {
-            case INTEGER:
-            case DECIMAL:
-            case BOOLEAN:
-                env.getBytesWriter()
-                        .writeByte(Instructions.HEAD_PUSH)
-                        .writeInteger((Integer) token.getContent());
-                break;
+            case INTEGER:output.add(String.format("  push %d, %d", DataType.INTEGER.length, (Integer) token.getContent())); break;
+            case DECIMAL:output.add(String.format("  push %d, %d", DataType.DECIMAL.length, (Double) token.getContent())); break;
+            case BOOLEAN: output.add(String.format("  push %d, %d", DataType.BOOLEAN.length, (Boolean) token.getContent() ? 1 : 0)); break;
             case VARIABLE_NAME:
-                env.getBytesWriter()
-                        .writeByte(Instructions.HEAD_PUSH)
-                        .writeInteger(env.getField((String) token.getContent()).position)
-                        .writeByte(Instructions.HEAD_LOAD);
-                break;
-            case STRING: break;
-            default: break;
-        }
-    }
-
-    @Override
-    public void toAssemble(List<Instruction> res, Scope scope) {
-        switch (token.getType()) {
-            case INTEGER:
-            case DECIMAL:
-            case BOOLEAN:
-                res.add(new Push(4, (Integer) token.getContent()));
-                break;
-            case VARIABLE_NAME:
-                res.add(new Push(4, scope.getField((String) token.getContent()).position));
-                res.add(new Load(4));
+                Field field = env.getField((String) token.getContent());
+                if (field == null) throw new RSIOCompileException("Undefined variable: " + token.getContent(), token.getPosition());
+                output.add(String.format("  push %d, %d", DataType.ADDRESS_LENGTH, field.position));
+                output.add("  load " + field.type.length);
                 break;
             case STRING: break;
             default: break;

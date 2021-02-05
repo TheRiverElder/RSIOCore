@@ -1,5 +1,7 @@
 package top.riverelder.rsio.core.token;
 
+import top.riverelder.rsio.core.util.BufferedStringBuilder;
+
 public class NumberToken extends Token {
 
     private Number value;
@@ -26,7 +28,7 @@ public class NumberToken extends Token {
     }
 
     @Override
-    public void toSource(StringBuilder builder) {
-        builder.append(value);
+    public void toSource(BufferedStringBuilder builder) {
+        builder.write(value);
     }
 }

@@ -2,14 +2,11 @@ package top.riverelder.rsio.core.ast;
 
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
-import top.riverelder.rsio.core.CompileEnvironment;
-import top.riverelder.rsio.core.Instructions;
+import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.compile.Field;
-import top.riverelder.rsio.core.compile.Scope;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
-import top.riverelder.rsio.core.instruction.Instruction;
-import top.riverelder.rsio.core.instruction.Save;
+import top.riverelder.rsio.core.util.BufferedStringBuilder;
 
 import java.util.List;
 
@@ -27,38 +24,26 @@ public class Assignment extends AST {
     }
 
     @Override
-    public void toSource(StringBuilder builder) {
+    public void toSource(BufferedStringBuilder builder) {
         if (host != null) {
-            host.toSource(builder);
-            builder.append('.');
+            builder.write(host).write('.');
         }
-        builder.append(field).append(" = ");
-        value.toSource(builder);
+        builder.write(field).write(" = ").write(value);
     }
 
     @Override
-    public void toBytes(CompileEnvironment env) throws RSIOCompileException {
-        Field f = env.getField(this.field);
-        if (f == null) {
-            f = env.createField(this.field, DataType.INTEGER);
-        }
-        DataType valueDataType = value.getDataType(env);
-        if (f.type != valueDataType) throw new RSIOCompileException("Incompatible data type", this.getPosition());
-
-        value.toBytes(env);
-        env.getBytesWriter().writeByte(Instructions.HEAD_PUSH);
-        env.getBytesWriter().writeInteger(f.position);
-        env.getBytesWriter().writeByte(Instructions.HEAD_SAVE);
-    }
-
-    @Override
-    public DataType getDataType(CompileEnvironment env) {
+    public DataType getDataType(NestedCompileEnvironment env) {
         return env.getField(field).type;
     }
 
     @Override
-    public void toAssemble(List<Instruction> res, Scope scope) {
-        value.toAssemble(res, scope);
-        res.add(new Save(4));
+    public void toAssemble(List<String> output, NestedCompileEnvironment env) throws RSIOCompileException {
+        Field field = env.getField(this.field);
+        if (field == null) throw new RSIOCompileException("Undefined field: " + this.field, this.getPosition());
+        if (field.isConstant) throw new RSIOCompileException("Cannot modify a constant field: " + this.field, this.getPosition());
+
+        value.toAssemble(output, env);
+        output.add("  push 4, " + field.position);
+        output.add("  save");
     }
 }

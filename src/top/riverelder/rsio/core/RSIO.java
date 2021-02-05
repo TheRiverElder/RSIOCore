@@ -1,61 +1,10 @@
 package top.riverelder.rsio.core;
 
-import top.riverelder.rsio.core.ast.AST;
-import top.riverelder.rsio.core.compile.DataType;
-import top.riverelder.rsio.core.compile.Field;
-import top.riverelder.rsio.core.compile.Scope;
-import top.riverelder.rsio.core.exception.RSIOCompileException;
-import top.riverelder.rsio.core.instruction.Instruction;
-import top.riverelder.rsio.core.token.Token;
 import top.riverelder.rsio.core.util.BytesReader;
-import top.riverelder.rsio.core.util.StaticStringReader;
-import top.riverelder.rsio.core.util.TokenReader;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import static top.riverelder.rsio.core.Instructions.*;
 
 public class RSIO {
-
-    public static byte[] compile(String code, CompileEnvironment env) throws RSIOCompileException {
-        StaticStringReader reader = new StaticStringReader(code);
-        List<Token> tokens = new RSIOTokenizer(reader).tokenize();
-        tokens.forEach(System.out::println);
-
-        AST program = new RSIOParser(new TokenReader(tokens)).parse();
-
-        Scope scope = new Scope();
-        scope.setField(new Field("north", 0, DataType.INTEGER));
-        scope.setField(new Field("south", 4, DataType.INTEGER));
-        scope.setField(new Field("west", 8, DataType.INTEGER));
-        scope.setField(new Field("east", 12, DataType.INTEGER));
-        scope.setField(new Field("up", 16, DataType.INTEGER));
-        scope.setField(new Field("down", 20, DataType.INTEGER));
-        List<Instruction> res = new ArrayList<>();
-        program.toAssemble(res, scope);
-        StringBuilder asmBuilder = new StringBuilder();
-        res.forEach(ins -> ins.toSource(asmBuilder));
-        System.out.println(asmBuilder.toString());
-
-        StringBuilder builder = new StringBuilder();
-        program.toSource(builder);
-        System.out.println(builder.toString());
-        program.toBytes(env);
-
-        byte[] bytes = env.getBytesWriter().toBytes();
-        for (int i = 0; i < bytes.length;) {
-            System.out.printf("%4d:", i);
-            for (int j = 0; j < 4 && i + j < bytes.length; j++) {
-                System.out.printf("%4d", bytes[i + j]);
-            }
-            i += 4;
-            System.out.println();
-        }
-
-        return bytes;
-    }
 
     public static void run(byte[] bytes, RSIORuntime runtime) {
         BytesReader reader = new BytesReader(bytes);

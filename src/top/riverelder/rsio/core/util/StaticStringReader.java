@@ -1,8 +1,6 @@
 package top.riverelder.rsio.core.util;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -64,6 +62,7 @@ public class StaticStringReader {
 
     public String read(String ...patterns) {
         List<String> pats = Arrays.stream(patterns).sorted(Comparator.comparingInt(String::length)).collect(Collectors.toList());
+        Collections.reverse(pats);
         for (String pat : pats) {
             if (read(pat)) return pat;
         }

@@ -1,5 +1,7 @@
 package top.riverelder.rsio.core.token;
 
+import top.riverelder.rsio.core.util.BufferedStringBuilder;
+
 import java.util.List;
 
 public class IdToken extends Token {
@@ -23,7 +25,7 @@ public class IdToken extends Token {
     }
 
     @Override
-    public void toSource(StringBuilder builder) {
-        builder.append(id);
+    public void toSource(BufferedStringBuilder builder) {
+        builder.write(id);
     }
 }

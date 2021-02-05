@@ -2,15 +2,10 @@ package top.riverelder.rsio.core.ast;
 
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
-import top.riverelder.rsio.core.CompileEnvironment;
-import top.riverelder.rsio.core.Instructions;
+import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
-import top.riverelder.rsio.core.compile.Scope;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
-import top.riverelder.rsio.core.instruction.Instruction;
-import top.riverelder.rsio.core.instruction.Jump;
-import top.riverelder.rsio.core.instruction.Push;
-import top.riverelder.rsio.core.util.BytesWriter;
+import top.riverelder.rsio.core.util.BufferedStringBuilder;
 
 import java.util.List;
 
@@ -28,59 +23,36 @@ public class If extends AST {
     }
 
     @Override
-    public DataType getDataType(CompileEnvironment env) {
-        return DataType.INTEGER;
+    public DataType getDataType(NestedCompileEnvironment env) {
+        if (ifFalseValue == null) return ifTrueValue.getDataType(env);
+        return DataType.getHigher(ifTrueValue.getDataType(env), ifFalseValue.getDataType(env));
     }
 
     @Override
-    public void toBytes(CompileEnvironment env) throws RSIOCompileException {
-        condition.toBytes(env);
-        BytesWriter writer = env.getBytesWriter();
-        writer.writeByte(Instructions.HEAD_PUSH);
-        int index = writer.size();
-        writer.writeInteger(0);
-        writer.writeByte(Instructions.HEAD_IZJ);
-
-        ifTrueValue.toBytes(env);
+    public void toSource(BufferedStringBuilder builder) {
+        builder.write("if (").write(condition).write(") ").write(ifTrueValue);
         if (ifFalseValue != null) {
-            writer.writeByte(Instructions.HEAD_PUSH);
-            int indexAfterTrueValue = writer.size();
-            writer.writeInteger(0);
-            writer.writeByte(Instructions.HEAD_JMP);
-            writer.writeIntegerAt(index, writer.size());
-            ifFalseValue.toBytes(env);
-            writer.writeIntegerAt(indexAfterTrueValue, writer.size());
+            builder.write(" else ").write(ifFalseValue);
+        }
+    }
+
+    @Override
+    public void toAssemble(List<String> output, NestedCompileEnvironment env) throws RSIOCompileException {
+        condition.toAssemble(output, env);
+        if (ifFalseValue != null) {
+            String falseStartLabel = String.format("S%d_N%d_L%d", env.getDepth(), env.getNumber(), env.countLabel());
+            String endLabel = String.format("S%d_N%d_L%d", env.getDepth(), env.getNumber(), env.countLabel());
+            output.add("  izj " + falseStartLabel);
+            ifTrueValue.toAssemble(output, env);
+            output.add("  jmp " + endLabel);
+            output.add(falseStartLabel + ":");
+            ifFalseValue.toAssemble(output, env);
+            output.add(endLabel + ":");
         } else {
-            writer.writeIntegerAt(index, writer.size());
+            String endLabel = String.format("S%d_N%d_L%d", env.getDepth(), env.getNumber(), env.countLabel());
+            output.add("  izj " + endLabel);
+            ifTrueValue.toAssemble(output, env);
+            output.add(endLabel + ":");
         }
-    }
-
-    @Override
-    public void toSource(StringBuilder builder) {
-        builder.append("if (");
-        condition.toSource(builder);
-        builder.append(") {");
-        ifTrueValue.toSource(builder);
-        builder.append("}");
-        if (ifFalseValue != null) {
-            builder.append(" else {");
-            ifFalseValue.toSource(builder);
-            builder.append("}");
-        }
-    }
-
-    @Override
-    public void toAssemble(List<Instruction> res, Scope scope) {
-        condition.toAssemble(res, scope);
-        Push toFalseValue = new Push(8, 0);
-        Push toEnd = new Push(8, 0);
-        res.add(toFalseValue);
-        res.add(new Jump(true));
-
-        if (ifFalseValue != null) {
-
-        }
-        ifTrueValue.toAssemble(res, scope);
-
     }
 }

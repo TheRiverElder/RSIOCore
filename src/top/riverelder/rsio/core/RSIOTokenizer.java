@@ -31,7 +31,7 @@ public class RSIOTokenizer {
             "if", "else", "while",
     };
 
-    private StaticStringReader reader;
+    private final StaticStringReader reader;
 
     public RSIOTokenizer(StaticStringReader reader) {
         this.reader = reader;
@@ -98,7 +98,6 @@ public class RSIOTokenizer {
         if (!Character.isDigit(reader.peek())) return null;
         String digitPartString = reader.readFollowing(Character::isDigit);
 
-        int mark = reader.getCursor();
         if (!reader.hasMore() || !reader.read('.')) {
             int digitValue = Integer.parseInt(digitPartString);
             return new NumberToken(digitValue);
