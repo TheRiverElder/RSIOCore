@@ -26,7 +26,7 @@ public class PrimitiveValue extends AST {
     @Override
     public DataType getDataType(NestedCompileEnvironment env) {
         switch (token.getType()) {
-            case VARIABLE_NAME: return env.getField((String) token.getContent()).type;
+            case FIELD_NAME: return env.getField((String) token.getContent()).type;
             case INTEGER: return DataType.INTEGER;
             case DECIMAL: return DataType.DECIMAL;
             case STRING: return DataType.STRING;
@@ -41,7 +41,7 @@ public class PrimitiveValue extends AST {
             case INTEGER:output.add(String.format("  push %d, %d", DataType.INTEGER.length, (Integer) token.getContent())); break;
             case DECIMAL:output.add(String.format("  push %d, %d", DataType.DECIMAL.length, (Double) token.getContent())); break;
             case BOOLEAN: output.add(String.format("  push %d, %d", DataType.BOOLEAN.length, (Boolean) token.getContent() ? 1 : 0)); break;
-            case VARIABLE_NAME:
+            case FIELD_NAME:
                 Field field = env.getField((String) token.getContent());
                 if (field == null) throw new RSIOCompileException("Undefined variable: " + token.getContent(), token.getPosition());
                 output.add(String.format("  push %d, %d", DataType.ADDRESS_LENGTH, field.position));

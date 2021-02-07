@@ -2,8 +2,6 @@ package top.riverelder.rsio.core.token;
 
 import top.riverelder.rsio.core.util.BufferedStringBuilder;
 
-import java.util.List;
-
 public class IdToken extends Token {
 
     private final String id;
@@ -21,7 +19,7 @@ public class IdToken extends Token {
 
     @Override
     public TokenType getType() {
-        return isVariableName ? TokenType.VARIABLE_NAME : TokenType.OPERATOR;
+        return isVariableName ? TokenType.FIELD_NAME : TokenType.OPERATOR;
     }
 
     @Override

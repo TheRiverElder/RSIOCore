@@ -27,8 +27,11 @@ public class RSIOTokenizer {
             "|", "&", "^", // 位运算
             "~", "#", "@", // 快捷操作
             ";", "=", ".", "=>",
-            "?", ":",
-            "if", "else", "while",
+            "?", ":"
+    };
+
+    public static String[] KEY_WORDS = new String[] {
+            "if", "else", "while", "let", "const", "function"
     };
 
     private final StaticStringReader reader;
@@ -40,7 +43,7 @@ public class RSIOTokenizer {
     public List<Token> tokenize() throws RSIOCompileException {
         List<Token> tokens = new ArrayList<>();
 
-        List<Supplier<Token>> parsers = Arrays.asList(this::number, this::operator, this::varName);
+        List<Supplier<Token>> parsers = Arrays.asList(this::number, this::id);
 
         while (reader.hasMore()) {
             // 跳过空白与注释
@@ -81,17 +84,16 @@ public class RSIOTokenizer {
         return false;
     }
 
-    private IdToken varName() {
+    private IdToken id() {
+        String operator = reader.read(OPERATORS);
+        if (operator != null) return new IdToken(operator, false);
+
         if (!isVarNameHead(reader.peek())) return null;
         char varNameHead = reader.read();
         String varNameBody = reader.readFollowing(RSIOTokenizer::isVarNameBody);
         String varName = varNameHead + (varNameBody == null ? "" : varNameBody);
+        if (Arrays.asList(KEY_WORDS).contains(varName)) return new IdToken(varName, false);
         return new IdToken(varName, true);
-    }
-
-    private IdToken operator() {
-        String operator = reader.read(OPERATORS);
-        return operator == null ? null : new IdToken(operator, false);
     }
 
     private NumberToken number() {

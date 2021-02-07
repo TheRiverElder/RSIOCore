@@ -11,6 +11,7 @@ public class NestedCompileEnvironment {
     private int depth = 0;
     private int number = 0;
     private final Map<String, Field> fields;
+    private final Map<String, DataType> dataTypes;
     private int allocatedSize = 0;
     private int labelCounter = 0;
     private int childEnvCounter = 0;
@@ -23,6 +24,7 @@ public class NestedCompileEnvironment {
             this.number = parent.childEnvCounter++;
         }
         fields = new HashMap<>();
+        dataTypes = new HashMap<>();
     }
 
     public NestedCompileEnvironment() {
@@ -69,4 +71,16 @@ public class NestedCompileEnvironment {
     public Collection<Field> getFieldList() {
         return fields.values();
     }
+
+
+
+    public void putDataType(DataType dataType) {
+        dataTypes.put(dataType.name, dataType);
+    }
+
+    public DataType getDataType(String name) {
+        return dataTypes.get(name);
+    }
+
+
 }

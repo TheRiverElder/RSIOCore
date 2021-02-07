@@ -52,7 +52,7 @@ public class TokenReader {
     }
 
     public Token read(String ...operators) {
-        if (!hasMore() && peek().getType() != TokenType.OPERATOR) return null;
+        if (!hasMore() || peek().getType() != TokenType.OPERATOR) return null;
         Token t = peek();
         if (Arrays.stream(operators).anyMatch(id -> Objects.equals(id, t.getContent()))) return read();
         return null;

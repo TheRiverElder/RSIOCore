@@ -62,14 +62,41 @@ public class RSIOParser {
         if ((ast = parseIf()) != null) return ast;
         if ((ast = parseWhile()) != null) return ast;
         if ((ast = parseScope()) != null) return ast;
-        if ((ast = parseValuable()) != null && reader.tryRead(";")) return ast;
+        if ((
+                (ast = parseFieldDefine()) != null || (ast = parseValuable()) != null
+        ) && reader.tryRead(";")) return ast;
+        reader.setCursor(start);
+        return null;
+    }
+
+    private AST parseFieldDefine() throws RSIOCompileException {
+        int start = reader.getCursor();
+        Token defineToken = reader.read("let", "const");
+        if (defineToken == null) return null;
+
+        boolean constant = "const".equals(defineToken.getContent());
+
+        Token nameToken = reader.read(TokenType.FIELD_NAME);
+        if (nameToken != null) {
+            String name = (String) nameToken.getContent();
+
+            Token dataTypeNameToken;
+            if (reader.tryRead(":") && (dataTypeNameToken = reader.read(TokenType.FIELD_NAME)) != null) {
+                String dataTypeName = (String) dataTypeNameToken.getContent();
+                AST initialValue = null;
+                if (!reader.tryRead("=") || (initialValue = parseValuable()) != null) {
+                    return new FieldDefine(defineToken.getPosition(), constant, name, dataTypeName, initialValue);
+                }
+            }
+        }
+
         reader.setCursor(start);
         return null;
     }
 
     private AST parseAssignment() throws RSIOCompileException {
         int start = reader.getCursor();
-        Token fieldToken = reader.read(TokenType.VARIABLE_NAME);
+        Token fieldToken = reader.read(TokenType.FIELD_NAME);
         if (fieldToken == null) return null;
 
         String field = (String) fieldToken.getContent();
@@ -168,7 +195,7 @@ public class RSIOParser {
      * @return result
      */
     private AST parseBasicOperand() {
-        Token token = reader.read(TokenType.VARIABLE_NAME);
+        Token token = reader.read(TokenType.FIELD_NAME);
         if (token == null) {
             token = reader.read(TokenType.INTEGER);
         }

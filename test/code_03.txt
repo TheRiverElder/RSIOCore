@@ -1,0 +1,6 @@
+let variable: int = 10;
+const constant: int = 20;
+let notInitialized: int;
+
+variable = 30;
+//constant = 40;

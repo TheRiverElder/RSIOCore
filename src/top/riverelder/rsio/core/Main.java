@@ -20,7 +20,7 @@ public class Main {
 
     public static void main(String[] args) {
         String code = "";
-        try (FileReader reader = new FileReader(new File("./test/code_01.txt"))) {
+        try (FileReader reader = new FileReader(new File("./test/code_03.txt"))) {
             StringBuilder builder= new StringBuilder();
             char[] buf = new char[1024];
             int len = 0;
@@ -46,6 +46,13 @@ public class Main {
             env.createField("up", DataType.INTEGER, false);
             env.createField("down", DataType.INTEGER, false);
             env.createField("curTick", DataType.INTEGER, true);
+
+            env.putDataType(DataType.BOOLEAN);
+            env.putDataType(DataType.DECIMAL);
+            env.putDataType(DataType.FUNCTION);
+            env.putDataType(DataType.INTEGER);
+            env.putDataType(DataType.VOID);
+            env.putDataType(DataType.STRING);
 
             StaticStringReader reader = new StaticStringReader(code);
             RSIOTokenizer tokenizer = new RSIOTokenizer(reader);

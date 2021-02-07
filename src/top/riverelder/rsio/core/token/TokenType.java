@@ -7,6 +7,6 @@ public enum TokenType {
     DECIMAL,
     STRING,
     OPERATOR,
-    VARIABLE_NAME,
+    FIELD_NAME,
     ;
 }

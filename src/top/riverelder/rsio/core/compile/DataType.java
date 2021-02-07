@@ -4,6 +4,7 @@ public class DataType {
 
     public static final int ADDRESS_LENGTH = 4;
 
+    public static final DataType FUNCTION = new DataType("function", 4, false, -1);
     public static final DataType STRING = new DataType("string", 4, false, 4);
     public static final DataType DECIMAL = new DataType("double", 8, true, 3);
     public static final DataType INTEGER = new DataType("int", 4, false, 2);
