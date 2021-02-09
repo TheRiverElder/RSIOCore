@@ -2,6 +2,7 @@ package top.riverelder.rsio.core.ast;
 
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
+import top.riverelder.rsio.core.compile.CompileEnvironment;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
@@ -23,7 +24,7 @@ public class If extends AST {
     }
 
     @Override
-    public DataType getDataType(NestedCompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) {
         if (ifFalseValue == null) return ifTrueValue.getDataType(env);
         return DataType.getHigher(ifTrueValue.getDataType(env), ifFalseValue.getDataType(env));
     }
@@ -37,11 +38,11 @@ public class If extends AST {
     }
 
     @Override
-    public void toAssemble(List<String> output, NestedCompileEnvironment env) throws RSIOCompileException {
+    public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException {
         condition.toAssemble(output, env);
         if (ifFalseValue != null) {
-            String falseStartLabel = String.format("S%d_N%d_L%d", env.getDepth(), env.getNumber(), env.countLabel());
-            String endLabel = String.format("S%d_N%d_L%d", env.getDepth(), env.getNumber(), env.countLabel());
+            String falseStartLabel = String.format("L%d", env.countLabel());
+            String endLabel = String.format("L%d", env.countLabel());
             output.add("  izj " + falseStartLabel);
             ifTrueValue.toAssemble(output, env);
             output.add("  jmp " + endLabel);
@@ -49,7 +50,7 @@ public class If extends AST {
             ifFalseValue.toAssemble(output, env);
             output.add(endLabel + ":");
         } else {
-            String endLabel = String.format("S%d_N%d_L%d", env.getDepth(), env.getNumber(), env.countLabel());
+            String endLabel = String.format("L%d", env.countLabel());
             output.add("  izj " + endLabel);
             ifTrueValue.toAssemble(output, env);
             output.add(endLabel + ":");

@@ -1,6 +1,7 @@
 package top.riverelder.rsio.core.ast;
 
 import top.riverelder.rsio.core.Operator;
+import top.riverelder.rsio.core.compile.CompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
@@ -28,20 +29,20 @@ public class TrinaryExpression extends AST {
     }
 
     @Override
-    public DataType getDataType(NestedCompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) {
         return DataType.getHigher(trueValue.getDataType(env), falseValue.getDataType(env));
     }
 
     @Override
-    public void toAssemble(List<String> output, NestedCompileEnvironment env) throws RSIOCompileException {
+    public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException {
         DataType trueValueDataType = trueValue.getDataType(env);
         DataType falseValueDataType = falseValue.getDataType(env);
         DataType finalDataType = DataType.getHigher(trueValueDataType, falseValueDataType);
 
         condition.toAssemble(output, env);
 
-        String falseStartLabel = String.format("S%d_N%d_L%d", env.getDepth(), env.getNumber(), env.countLabel());
-        String endLabel = String.format("S%d_N%d_L%d", env.getDepth(), env.getNumber(), env.countLabel());
+        String falseStartLabel = String.format("L%d", env.countLabel());
+        String endLabel = String.format("L%d", env.countLabel());
 
         output.add("  izj " + falseStartLabel);
 

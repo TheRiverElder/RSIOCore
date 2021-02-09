@@ -1,6 +1,7 @@
 package top.riverelder.rsio.core.ast;
 
 import top.riverelder.rsio.core.Operator;
+import top.riverelder.rsio.core.compile.CompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
@@ -26,12 +27,12 @@ public class UnaryExpression extends AST {
     }
 
     @Override
-    public DataType getDataType(NestedCompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) {
         return operand.getDataType(env);
     }
 
     @Override
-    public void toAssemble(List<String> output, NestedCompileEnvironment env) throws RSIOCompileException {
+    public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException {
         operand.toAssemble(output, env);
         output.add(String.format("  %s %d", operator.getAsmHead(), operand.getDataType(env).code));
     }

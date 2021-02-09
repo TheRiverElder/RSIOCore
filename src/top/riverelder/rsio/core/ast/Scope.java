@@ -1,5 +1,6 @@
 package top.riverelder.rsio.core.ast;
 
+import top.riverelder.rsio.core.compile.CompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
@@ -18,7 +19,7 @@ public class Scope extends AST {
     }
 
     @Override
-    public DataType getDataType(NestedCompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) {
         return statements.size() > 0 ? statements.get(statements.size() - 1).getDataType(env) : DataType.VOID;
     }
 
@@ -34,7 +35,7 @@ public class Scope extends AST {
     }
 
     @Override
-    public void toAssemble(List<String> output, NestedCompileEnvironment env) throws RSIOCompileException {
+    public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException {
         Iterator<AST> statementIterator = statements.iterator();
         while (statementIterator.hasNext()) {
             AST statement = statementIterator.next();

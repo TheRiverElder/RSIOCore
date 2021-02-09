@@ -1,5 +1,6 @@
 package top.riverelder.rsio.core.ast;
 
+import top.riverelder.rsio.core.compile.CompileEnvironment;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
@@ -18,7 +19,7 @@ public abstract class AST implements IToSource {
         return position;
     }
 
-    abstract public DataType getDataType(NestedCompileEnvironment env);
+    abstract public DataType getDataType(CompileEnvironment env);
 
-    abstract public void toAssemble(List<String> output, NestedCompileEnvironment env) throws RSIOCompileException;
+    abstract public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException;
 }

@@ -1,5 +1,6 @@
 package top.riverelder.rsio.core.ast;
 
+import top.riverelder.rsio.core.compile.CompileEnvironment;
 import top.riverelder.rsio.core.compile.Field;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
@@ -24,7 +25,7 @@ public class PrimitiveValue extends AST {
     }
 
     @Override
-    public DataType getDataType(NestedCompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) {
         switch (token.getType()) {
             case FIELD_NAME: return env.getField((String) token.getContent()).type;
             case INTEGER: return DataType.INTEGER;
@@ -36,10 +37,10 @@ public class PrimitiveValue extends AST {
     }
 
     @Override
-    public void toAssemble(List<String> output, NestedCompileEnvironment env) throws RSIOCompileException {
+    public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException {
         switch (token.getType()) {
             case INTEGER:output.add(String.format("  push %d, %d", DataType.INTEGER.length, (Integer) token.getContent())); break;
-            case DECIMAL:output.add(String.format("  push %d, %d", DataType.DECIMAL.length, (Double) token.getContent())); break;
+            case DECIMAL:output.add(String.format("  push %d, %f", DataType.DECIMAL.length, (Double) token.getContent())); break;
             case BOOLEAN: output.add(String.format("  push %d, %d", DataType.BOOLEAN.length, (Boolean) token.getContent() ? 1 : 0)); break;
             case FIELD_NAME:
                 Field field = env.getField((String) token.getContent());

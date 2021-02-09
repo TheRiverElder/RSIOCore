@@ -10,6 +10,7 @@ import top.riverelder.rsio.core.util.TokenReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 public class RSIOParser {
 
@@ -94,6 +95,41 @@ public class RSIOParser {
         return null;
     }
 
+    private AST parseFunctionDefine() throws RSIOCompileException {
+        int start = reader.getCursor();
+        Token defineToken = reader.read("function");
+        if (defineToken == null) return null;
+
+        Token nameToken = reader.read(TokenType.FIELD_NAME);
+        if (nameToken != null && reader.tryRead("(")) {
+            String name = (String) nameToken.getContent();
+
+            List<FieldInfo> parameters = new ArrayList<>();
+            FieldInfo parameter;
+            while ((parameter = parseFieldInfo()) != null) {
+                parameters.add(parameter);
+                if (!reader.tryRead(",")) break;
+            }
+
+            Token dataTypeNameToken;
+            if (reader.tryRead(")") && reader.tryRead(":") && (dataTypeNameToken = reader.read(TokenType.FIELD_NAME)) != null) {
+                String dataTypeName = (String) dataTypeNameToken.getContent();
+                AST body = reader.tryRead("=") ? parseValuable() : parseScope();
+                if (body != null) return new FunctionDefine(
+                        defineToken.getPosition(),
+                        name,
+                        parameters.stream().map(fi -> fi.name).collect(Collectors.toList()),
+                        parameters.stream().map(fi -> fi.dataTypeName).collect(Collectors.toList()),
+                        dataTypeName,
+                        body
+                );
+            }
+        }
+
+        reader.setCursor(start);
+        return null;
+    }
+
     private AST parseAssignment() throws RSIOCompileException {
         int start = reader.getCursor();
         Token fieldToken = reader.read(TokenType.FIELD_NAME);
@@ -111,6 +147,31 @@ public class RSIOParser {
             return null;
         }
         return new Assignment(fieldToken.getPosition(), null, field, value);
+    }
+
+    private FieldInfo parseFieldInfo() {
+        int start = reader.getCursor();
+        Token nameToken, dataTypeNameToken;
+        if ((nameToken = reader.read(TokenType.FIELD_NAME)) != null &&
+                reader.tryRead(":") &&
+                (dataTypeNameToken = reader.read(TokenType.FIELD_NAME)) != null
+        ) {
+            String name = (String) nameToken.getContent();
+            String dataTypeName = (String) dataTypeNameToken.getContent();
+            return new FieldInfo(name, dataTypeName);
+        }
+        reader.setCursor(start);
+        return null;
+    }
+
+    private static class FieldInfo {
+        final String name;
+        final String dataTypeName;
+
+        public FieldInfo(String name, String dataTypeName) {
+            this.name = name;
+            this.dataTypeName = dataTypeName;
+        }
     }
 
     private AST parseSimpleExpression() throws RSIOCompileException {

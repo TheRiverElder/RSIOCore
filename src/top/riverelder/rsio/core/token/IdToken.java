@@ -5,11 +5,11 @@ import top.riverelder.rsio.core.util.BufferedStringBuilder;
 public class IdToken extends Token {
 
     private final String id;
-    private final boolean isVariableName;
+    private final boolean fieldNameFlag;
 
-    public IdToken(String id, boolean isVariableName) {
+    public IdToken(String id, boolean fieldNameFlag) {
         this.id = id;
-        this.isVariableName = isVariableName;
+        this.fieldNameFlag = fieldNameFlag;
     }
 
     @Override
@@ -19,7 +19,7 @@ public class IdToken extends Token {
 
     @Override
     public TokenType getType() {
-        return isVariableName ? TokenType.FIELD_NAME : TokenType.OPERATOR;
+        return fieldNameFlag ? TokenType.FIELD_NAME : TokenType.OPERATOR;
     }
 
     @Override

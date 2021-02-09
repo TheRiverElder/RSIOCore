@@ -26,8 +26,8 @@ public class RSIOTokenizer {
             "||", "&&", "!", // 逻辑运算
             "|", "&", "^", // 位运算
             "~", "#", "@", // 快捷操作
-            ";", "=", ".", "=>",
-            "?", ":"
+            ",", ";", "=", ".", "=>",
+            "?", ":",
     };
 
     public static String[] KEY_WORDS = new String[] {

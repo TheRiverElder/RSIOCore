@@ -1,5 +1,6 @@
 package top.riverelder.rsio.core.ast;
 
+import top.riverelder.rsio.core.compile.CompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
@@ -19,14 +20,14 @@ public class While extends AST {
     }
 
     @Override
-    public DataType getDataType(NestedCompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) {
         return body.getDataType(env);
     }
 
     @Override
-    public void toAssemble(List<String> output, NestedCompileEnvironment env) throws RSIOCompileException {
-        String startLabel = String.format("S%d_N%d_L%d", env.getDepth(), env.getNumber(), env.countLabel());
-        String endLabel = String.format("S%d_N%d_L%d", env.getDepth(), env.getNumber(), env.countLabel());
+    public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException {
+        String startLabel = String.format("L%d", env.countLabel());
+        String endLabel = String.format("L%d", env.countLabel());
         output.add(startLabel + ":");
         condition.toAssemble(output, env);
         output.add("  izj " + endLabel);

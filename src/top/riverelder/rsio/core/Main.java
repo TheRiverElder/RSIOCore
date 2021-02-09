@@ -4,6 +4,7 @@ import top.riverelder.rsio.core.ast.AST;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.compile.RSIOParser;
+import top.riverelder.rsio.core.compile.RootCompileEnvironment;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
 import top.riverelder.rsio.core.token.Token;
 import top.riverelder.rsio.core.util.BufferedStringBuilder;
@@ -23,7 +24,7 @@ public class Main {
         try (FileReader reader = new FileReader(new File("./test/code_03.txt"))) {
             StringBuilder builder= new StringBuilder();
             char[] buf = new char[1024];
-            int len = 0;
+            int len;
             while ((len = reader.read(buf)) > 0) {
                 builder.append(buf, 0, len);
             }
@@ -38,7 +39,7 @@ public class Main {
         System.out.println(code);
         System.out.println("====RSIO====");
         try {
-            NestedCompileEnvironment env = new NestedCompileEnvironment();
+            RootCompileEnvironment env = new RootCompileEnvironment();
             env.createField("north", DataType.INTEGER, false);
             env.createField("south", DataType.INTEGER, false);
             env.createField("west", DataType.INTEGER, false);

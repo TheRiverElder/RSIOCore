@@ -1,5 +1,6 @@
 package top.riverelder.rsio.core.ast;
 
+import top.riverelder.rsio.core.compile.CompileEnvironment;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.Operator;
 import top.riverelder.rsio.core.compile.DataType;
@@ -30,14 +31,14 @@ public class BinaryExpression extends AST {
     }
 
     @Override
-    public DataType getDataType(NestedCompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) {
         DataType leftDataType = leftOperand.getDataType(env);
         DataType rightDataType = rightOperand.getDataType(env);
         return leftDataType.length >= rightDataType.length ? leftDataType : rightDataType;
     }
 
     @Override
-    public void toAssemble(List<String> output, NestedCompileEnvironment env) throws RSIOCompileException {
+    public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException {
         DataType leftDataType = leftOperand.getDataType(env);
         DataType rightDataType = rightOperand.getDataType(env);
         DataType finalDataType = leftDataType.length >= rightDataType.length ? leftDataType : rightDataType;
