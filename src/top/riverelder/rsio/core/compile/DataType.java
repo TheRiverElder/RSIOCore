@@ -24,12 +24,19 @@ public class DataType {
     public final boolean isFloat;
     public final int level;
 
+    public final FunctionInfo functionInfo;
+
     public DataType(String name, int length, boolean isFloat, int level) {
+        this(name, length, isFloat, level, null);
+    }
+
+    public DataType(String name, int length, boolean isFloat, int level, FunctionInfo functionInfo) {
         this.name = name;
         this.length = length;
         this.code = (isFloat ? 0b1000 : 0) | length;
         this.isFloat = isFloat;
         this.level = level;
+        this.functionInfo = functionInfo;
     }
 
     @Override
@@ -37,6 +44,10 @@ public class DataType {
         return "DataType{" +
                 "name='" + name + '\'' +
                 ", length=" + length +
+                ", code=" + code +
+                ", isFloat=" + isFloat +
+                ", level=" + level +
+                ", functionInfo=" + functionInfo +
                 '}';
     }
 }

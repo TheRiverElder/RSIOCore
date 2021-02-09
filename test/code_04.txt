@@ -2,3 +2,4 @@ function sum(a: int, b: int): int {
     a + b;
 }
 function mul(c: int, d: int): int = c * d;
+const e: int = sum(10, 24);

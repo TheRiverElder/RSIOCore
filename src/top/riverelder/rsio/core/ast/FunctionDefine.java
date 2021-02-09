@@ -1,12 +1,10 @@
 package top.riverelder.rsio.core.ast;
 
-import top.riverelder.rsio.core.compile.CompileEnvironment;
-import top.riverelder.rsio.core.compile.DataType;
-import top.riverelder.rsio.core.compile.FunctionCompileEnvironment;
-import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
+import top.riverelder.rsio.core.compile.*;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
 import top.riverelder.rsio.core.util.BufferedStringBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,20 +32,31 @@ public class FunctionDefine extends AST {
 
     @Override
     public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException {
+        List<DataType> parameterDataTypes = new ArrayList<>(parameterNames.size());
         FunctionCompileEnvironment bodyEnv = new FunctionCompileEnvironment(env);
         bodyEnv.createField("__FUNCTION_NAME__", DataType.STRING, true);
         for (int i = 0; i < parameterNames.size(); i++) {
             bodyEnv.createField(parameterNames.get(i), env.getDataType(parameterDataTypeNames.get(i)), false);
+            DataType dataType = env.getDataType(parameterDataTypeNames.get(i));
+            if (dataType == null)
+                throw new RSIOCompileException("Undefined data type: " + parameterDataTypeNames.get(i), getPosition());
+            parameterDataTypes.add(dataType);
         }
 
-        DataType bodyDataType = body.getDataType(bodyEnv);
+        DataType resultDataType;
         if (resultDataTypeName != null) {
-            DataType resultDataType = env.getDataType(resultDataTypeName);
+            DataType bodyDataType = body.getDataType(bodyEnv);
+            resultDataType = env.getDataType(resultDataTypeName);
             if (resultDataType == null)
                 throw new RSIOCompileException("Undefined data type: " + resultDataTypeName, getPosition());
             if (bodyDataType.level > resultDataType.level)
                 throw new RSIOCompileException("Unmatched data type: " + resultDataType.name + ", " + bodyDataType.name, getPosition());
+        } else {
+            resultDataType = DataType.VOID;
         }
+
+        FunctionInfo info = new FunctionInfo(name, resultDataType, parameterDataTypes);
+        env.createFunctionField(name, info, false);
 
         output.add("sect " + name + ":");
         body.toAssemble(output, bodyEnv);

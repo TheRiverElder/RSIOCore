@@ -268,15 +268,28 @@ public class RSIOParser {
      * basic_operand = INTEGER | DECIMAL | STRING | ID
      * @return result
      */
-    private AST parseBasicOperand() {
-        Token token = reader.read(TokenType.FIELD_NAME);
-        if (token == null) {
-            token = reader.read(TokenType.INTEGER);
+    private AST parseBasicOperand() throws RSIOCompileException {
+        Token token;
+        if ((token = reader.read(TokenType.FIELD_NAME)) != null) {
+            AST ast = new PrimitiveValue(token);
+            int start = reader.getCursor();
+            while (reader.tryRead("(")) {
+                List<AST> arguments = new ArrayList<>();
+                AST argument;
+                while ((argument = parseValuable()) != null) {
+                    arguments.add(argument);
+                    if (!reader.tryRead(",")) break;
+                }
+                if (!reader.tryRead(")")) break;
+                start = reader.getCursor();
+                ast = new FunctionCall(token.getPosition(), ast, arguments);
+            }
+            reader.setCursor(start);
+            return ast;
         }
-        if (token == null) {
-            token = reader.read(TokenType.DECIMAL);
-        }
-        return token == null ? null : new PrimitiveValue(token);
+        if ((token = reader.read(TokenType.INTEGER)) != null)  return new PrimitiveValue(token);
+        if ((token = reader.read(TokenType.DECIMAL)) != null) return new PrimitiveValue(token);
+        return null;
     }
 
     private AST parseOperand() throws RSIOCompileException {

@@ -1,5 +1,7 @@
 package top.riverelder.rsio.core.compile;
 
+import top.riverelder.rsio.core.ast.FunctionDefine;
+
 public class Field {
     public final String name;
     public final int position;
