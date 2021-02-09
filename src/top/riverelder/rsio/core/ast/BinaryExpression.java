@@ -31,7 +31,7 @@ public class BinaryExpression extends AST {
     }
 
     @Override
-    public DataType getDataType(CompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) throws RSIOCompileException {
         DataType leftDataType = leftOperand.getDataType(env);
         DataType rightDataType = rightOperand.getDataType(env);
         return leftDataType.length >= rightDataType.length ? leftDataType : rightDataType;

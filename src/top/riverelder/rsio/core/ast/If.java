@@ -24,7 +24,7 @@ public class If extends AST {
     }
 
     @Override
-    public DataType getDataType(CompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) throws RSIOCompileException {
         if (ifFalseValue == null) return ifTrueValue.getDataType(env);
         return DataType.getHigher(ifTrueValue.getDataType(env), ifFalseValue.getDataType(env));
     }

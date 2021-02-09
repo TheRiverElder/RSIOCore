@@ -25,9 +25,13 @@ public class PrimitiveValue extends AST {
     }
 
     @Override
-    public DataType getDataType(CompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) throws RSIOCompileException {
         switch (token.getType()) {
-            case FIELD_NAME: return env.getField((String) token.getContent()).type;
+            case FIELD_NAME: {
+                Field field = env.getField((String) token.getContent());
+                if (field == null) throw new RSIOCompileException("Undefined variable: " + token.getContent(), token.getPosition());
+                return field.type;
+            }
             case INTEGER: return DataType.INTEGER;
             case DECIMAL: return DataType.DECIMAL;
             case STRING: return DataType.STRING;

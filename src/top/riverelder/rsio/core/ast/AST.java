@@ -19,7 +19,7 @@ public abstract class AST implements IToSource {
         return position;
     }
 
-    abstract public DataType getDataType(CompileEnvironment env);
+    abstract public DataType getDataType(CompileEnvironment env) throws RSIOCompileException;
 
     abstract public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException;
 }

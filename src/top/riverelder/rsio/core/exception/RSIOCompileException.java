@@ -5,7 +5,7 @@ public class RSIOCompileException extends Exception {
     private int position;
 
     public RSIOCompileException(String message, int position) {
-        super(message + "@" + position);
+        super(message + " @ " + position);
         this.position = position;
     }
 

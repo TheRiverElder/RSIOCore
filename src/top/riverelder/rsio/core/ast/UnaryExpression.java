@@ -27,7 +27,7 @@ public class UnaryExpression extends AST {
     }
 
     @Override
-    public DataType getDataType(CompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) throws RSIOCompileException {
         return operand.getDataType(env);
     }
 

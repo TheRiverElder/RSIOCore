@@ -19,7 +19,7 @@ public class Scope extends AST {
     }
 
     @Override
-    public DataType getDataType(CompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) throws RSIOCompileException {
         return statements.size() > 0 ? statements.get(statements.size() - 1).getDataType(env) : DataType.VOID;
     }
 

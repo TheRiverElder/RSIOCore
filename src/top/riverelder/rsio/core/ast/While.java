@@ -20,7 +20,7 @@ public class While extends AST {
     }
 
     @Override
-    public DataType getDataType(CompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) throws RSIOCompileException {
         return body.getDataType(env);
     }
 

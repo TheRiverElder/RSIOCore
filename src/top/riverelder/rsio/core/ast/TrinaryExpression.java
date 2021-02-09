@@ -29,7 +29,7 @@ public class TrinaryExpression extends AST {
     }
 
     @Override
-    public DataType getDataType(CompileEnvironment env) {
+    public DataType getDataType(CompileEnvironment env) throws RSIOCompileException {
         return DataType.getHigher(trueValue.getDataType(env), falseValue.getDataType(env));
     }
 

@@ -8,6 +8,7 @@ import top.riverelder.rsio.core.exception.RSIOCompileException;
 import top.riverelder.rsio.core.util.BufferedStringBuilder;
 
 import java.util.List;
+import java.util.Objects;
 
 public class FunctionDefine extends AST {
 
@@ -33,12 +34,24 @@ public class FunctionDefine extends AST {
 
     @Override
     public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException {
-        NestedCompileEnvironment bodyEnv = new FunctionCompileEnvironment(env);
+        FunctionCompileEnvironment bodyEnv = new FunctionCompileEnvironment(env);
         bodyEnv.createField("__FUNCTION_NAME__", DataType.STRING, true);
         for (int i = 0; i < parameterNames.size(); i++) {
             bodyEnv.createField(parameterNames.get(i), env.getDataType(parameterDataTypeNames.get(i)), false);
         }
+
+        DataType bodyDataType = body.getDataType(bodyEnv);
+        if (resultDataTypeName != null) {
+            DataType resultDataType = env.getDataType(resultDataTypeName);
+            if (resultDataType == null)
+                throw new RSIOCompileException("Undefined data type: " + resultDataTypeName, getPosition());
+            if (bodyDataType.level > resultDataType.level)
+                throw new RSIOCompileException("Unmatched data type: " + resultDataType.name + ", " + bodyDataType.name, getPosition());
+        }
+
+        output.add("sect " + name + ":");
         body.toAssemble(output, bodyEnv);
+        output.add("end " + name);
     }
 
     @Override
@@ -50,6 +63,6 @@ public class FunctionDefine extends AST {
                 builder.write(", ");
             }
         }
-        builder.write("): ").write(resultDataTypeName).write(body instanceof Scope ? "" : " = ").write(body);
+        builder.write(")").write(resultDataTypeName == null ? "" : ": " + resultDataTypeName).write(body instanceof Scope ? " " : " = ").write(body);
     }
 }

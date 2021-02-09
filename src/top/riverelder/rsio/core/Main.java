@@ -21,7 +21,7 @@ public class Main {
 
     public static void main(String[] args) {
         String code = "";
-        try (FileReader reader = new FileReader(new File("./test/code_03.txt"))) {
+        try (FileReader reader = new FileReader(new File("./test/code_04.txt"))) {
             StringBuilder builder= new StringBuilder();
             char[] buf = new char[1024];
             int len;

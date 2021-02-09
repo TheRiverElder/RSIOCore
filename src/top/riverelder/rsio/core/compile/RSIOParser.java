@@ -63,6 +63,7 @@ public class RSIOParser {
         if ((ast = parseIf()) != null) return ast;
         if ((ast = parseWhile()) != null) return ast;
         if ((ast = parseScope()) != null) return ast;
+        if ((ast = parseFunctionDefine()) != null) return ast;
         if ((
                 (ast = parseFieldDefine()) != null || (ast = parseValuable()) != null
         ) && reader.tryRead(";")) return ast;
@@ -111,18 +112,25 @@ public class RSIOParser {
                 if (!reader.tryRead(",")) break;
             }
 
-            Token dataTypeNameToken;
-            if (reader.tryRead(")") && reader.tryRead(":") && (dataTypeNameToken = reader.read(TokenType.FIELD_NAME)) != null) {
-                String dataTypeName = (String) dataTypeNameToken.getContent();
-                AST body = reader.tryRead("=") ? parseValuable() : parseScope();
-                if (body != null) return new FunctionDefine(
-                        defineToken.getPosition(),
-                        name,
-                        parameters.stream().map(fi -> fi.name).collect(Collectors.toList()),
-                        parameters.stream().map(fi -> fi.dataTypeName).collect(Collectors.toList()),
-                        dataTypeName,
-                        body
-                );
+            if (reader.tryRead(")")) {
+                String dataTypeName = "void";
+                Token dataTypeNameToken;
+                if (reader.tryRead(":") && (dataTypeNameToken = reader.read(TokenType.FIELD_NAME)) != null) {
+                    dataTypeName = (String) dataTypeNameToken.getContent();
+                }
+
+                AST body;
+                if ((reader.tryRead("=") && (body = parseValuable()) != null && reader.tryRead(";"))
+                        || (body = parseScope()) != null) {
+                    return new FunctionDefine(
+                            defineToken.getPosition(),
+                            name,
+                            parameters.stream().map(fi -> fi.name).collect(Collectors.toList()),
+                            parameters.stream().map(fi -> fi.dataTypeName).collect(Collectors.toList()),
+                            dataTypeName,
+                            body
+                    );
+                }
             }
         }
 
@@ -171,6 +179,11 @@ public class RSIOParser {
         public FieldInfo(String name, String dataTypeName) {
             this.name = name;
             this.dataTypeName = dataTypeName;
+        }
+
+        @Override
+        public String toString() {
+            return name + ": " + dataTypeName;
         }
     }
 
