@@ -32,7 +32,7 @@ public class BytesReader {
     }
 
     public int readInt() {
-        int value = ByteArrays.readInt(bytes, cursor);
+        int value = ByteArrays.read32(bytes, cursor);
         cursor += Integer.BYTES;
         return value;
     }

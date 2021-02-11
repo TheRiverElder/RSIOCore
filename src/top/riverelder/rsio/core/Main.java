@@ -8,6 +8,7 @@ import top.riverelder.rsio.core.compile.RootCompileEnvironment;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
 import top.riverelder.rsio.core.token.Token;
 import top.riverelder.rsio.core.util.BufferedStringBuilder;
+import top.riverelder.rsio.core.util.Convert;
 import top.riverelder.rsio.core.util.StaticStringReader;
 import top.riverelder.rsio.core.util.TokenReader;
 
@@ -20,6 +21,33 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
+        testCompiler();
+//        testConvert();
+    }
+
+    public static void testConvert() {
+        List<Long> originValues = new ArrayList<>();
+        List<Long> targetValues = new ArrayList<>();
+        List<Integer> lengths = new ArrayList<>();
+
+        originValues.add(123456L);
+        lengths.add(4);
+        targetValues.add(123456L);
+
+        originValues.add(-123456L);
+        lengths.add(4);
+        targetValues.add(Integer.toUnsignedLong(-123456));
+
+        for (int i = 0; i < originValues.size(); i++) {
+            long ov = originValues.get(i);
+            int len = lengths.get(i);
+            long tv = targetValues.get(i);
+            long rv = Convert.convert(ov, len);
+            System.out.printf("convert: %s, length: %s,expect: %s, get: %s, match: %s%n", Long.toBinaryString(ov), len, Long.toBinaryString(tv), Long.toBinaryString(rv), rv == tv);
+        }
+    }
+
+    public static void testCompiler() {
         String code = "";
         try (FileReader reader = new FileReader(new File("./test/code_04.txt"))) {
             StringBuilder builder= new StringBuilder();
