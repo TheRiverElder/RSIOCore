@@ -1,0 +1,6 @@
+sect main
+  push.4 10
+  push.4 3
+  sub.4
+  save.4 0
+end

@@ -1,16 +1,15 @@
 package top.riverelder.rsio.core;
 
+import top.riverelder.rsio.core.assemble.Assembler;
 import top.riverelder.rsio.core.ast.AST;
+import top.riverelder.rsio.core.bytecode.RSIOExecutor;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.compile.RSIOParser;
 import top.riverelder.rsio.core.compile.RootCompileEnvironment;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
 import top.riverelder.rsio.core.token.Token;
-import top.riverelder.rsio.core.util.BufferedStringBuilder;
-import top.riverelder.rsio.core.util.Convert;
-import top.riverelder.rsio.core.util.StaticStringReader;
-import top.riverelder.rsio.core.util.TokenReader;
+import top.riverelder.rsio.core.util.*;
 
 import java.io.File;
 import java.io.FileReader;
@@ -21,8 +20,9 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
-        testCompiler();
+//        testCompiler();
 //        testConvert();
+        testAssemble();
     }
 
     public static void testConvert() {
@@ -48,20 +48,7 @@ public class Main {
     }
 
     public static void testCompiler() {
-        String code = "";
-        try (FileReader reader = new FileReader(new File("./test/code_04.txt"))) {
-            StringBuilder builder= new StringBuilder();
-            char[] buf = new char[1024];
-            int len;
-            while ((len = reader.read(buf)) > 0) {
-                builder.append(buf, 0, len);
-            }
-            code = builder.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
+        String code = readFile("code_04.txt");
 
         System.out.println("====CODE====");
         System.out.println(code);
@@ -118,4 +105,28 @@ public class Main {
         }
     }
 
+    public static void testAssemble() {
+        Assembler assembler = new Assembler();
+        byte[] bytecode = assembler.toBytes(readFile("asm_01.txt"));
+        ByteArrays.print(bytecode, 4);
+        RSIOExecutor executor = new RSIOExecutor();
+        executor.initialize(bytecode, 32, 32);
+        executor.execute();
+        System.out.println("--------");
+        ByteArrays.print(executor.getMemory(), 4);
+    }
+
+    public static String readFile(String fileName) {
+        StringBuilder builder= new StringBuilder();
+        char[] buf = new char[1024];
+        int len;
+        try (FileReader reader = new FileReader(new File("./test/" + fileName))) {
+            while ((len = reader.read(buf)) > 0) {
+                builder.append(buf, 0, len);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return builder.toString();
+    }
 }

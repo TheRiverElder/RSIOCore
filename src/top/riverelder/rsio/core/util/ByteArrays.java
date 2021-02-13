@@ -78,4 +78,15 @@ public class ByteArrays {
 
     //endregion
 
+    public static void print(byte[] bytes, int bytesInOneLine) {
+        for (int i = 0; i < bytes.length;) {
+            System.out.printf("%4d: ", i / bytesInOneLine);
+            for (int j = 0; j < bytesInOneLine; j++) {
+                System.out.printf("  %02x", bytes[i + j]);
+            }
+            i += bytesInOneLine;
+            System.out.println();
+        }
+    }
+
 }

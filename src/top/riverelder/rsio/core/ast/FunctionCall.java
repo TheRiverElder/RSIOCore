@@ -2,7 +2,6 @@ package top.riverelder.rsio.core.ast;
 
 import top.riverelder.rsio.core.compile.CompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
-import top.riverelder.rsio.core.compile.FunctionInfo;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
 import top.riverelder.rsio.core.exception.UnmatchedDataTypeException;
 import top.riverelder.rsio.core.util.BufferedStringBuilder;
@@ -30,10 +29,10 @@ public class FunctionCall extends AST {
 
     @Override
     public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException {
+        host.toAssemble(output, env);
         for (AST argument : arguments) {
             argument.toAssemble(output, env);
         }
-        host.toAssemble(output, env);
         output.add("  call");
     }
 

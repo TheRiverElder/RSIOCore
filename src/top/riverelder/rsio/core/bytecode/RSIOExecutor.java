@@ -3,7 +3,12 @@ package top.riverelder.rsio.core.bytecode;
 import top.riverelder.rsio.core.util.ByteArrays;
 import top.riverelder.rsio.core.util.Convert;
 
-import static top.riverelder.rsio.core.bytecode.Instructions.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
+import java.util.function.Consumer;
+
+import static top.riverelder.rsio.core.bytecode.Instruction.*;
 
 public class RSIOExecutor {
 
@@ -15,14 +20,22 @@ public class RSIOExecutor {
         return flag & 0b00000111;
     }
 
+    private byte[] program;
     private int programCounter;
-    private int stackPointer;
     private byte[] stack;
+    private int stackPointer;
     private byte[] memory;
-    private byte[] bytes;
+    private int memoryOffset;
+    private int memoryAllocStart;
+    private Stack<Integer> callStack;
+    private Map<Integer, Consumer<RSIOExecutor>> nativeFunctions;
+
+    public byte[] getMemory() {
+        return memory;
+    }
 
     public long readProgram(int length) {
-        long value = ByteArrays.read(bytes, programCounter, length);
+        long value = ByteArrays.read(program, programCounter, length);
         stackPointer += length;
         return value;
     }
@@ -43,18 +56,34 @@ public class RSIOExecutor {
         stackPointer += length;
     }
 
-    public void initialize(byte[] bytes, int stackSize, int memorySize) {
+    public void memoryWrite(int index, int length, long value) {
+        ByteArrays.write(memory, memoryOffset + index, length, value);
+    }
+
+    public long memoryRead(int index, int length) {
+        return ByteArrays.read(memory, memoryOffset + index, length);
+    }
+
+    public void initialize(byte[] program, int stackSize, int memorySize) {
         programCounter = 0;
         stackPointer = 0;
         stack = new byte[stackSize];
         memory = new byte[memorySize];
-        this.bytes = bytes;
+        memoryOffset = 0;
+        memoryAllocStart = 0;
+        this.program = program;
+        this.callStack = new Stack<>();
+        this.nativeFunctions = new HashMap<>();
+    }
+
+    public Map<Integer, Consumer<RSIOExecutor>> getNativeFunctions() {
+        return nativeFunctions;
     }
 
     public void execute() {
-        while (programCounter >= 0 && programCounter < bytes.length) {
-            byte head = bytes[programCounter++];
-            byte flags = bytes[programCounter++];
+        while (programCounter >= 0 && programCounter < program.length) {
+            byte head = program[programCounter++];
+            byte flags = program[programCounter++];
 
             switch (head) {
                 case HEAD_NOP: break;
@@ -88,25 +117,53 @@ public class RSIOExecutor {
                     if (pop(getLength(flags)) == 0) {
                         programCounter = (int) readProgram(4);
                     } break;
-                case HEAD_EXIT: programCounter = bytes.length; break;
+                case HEAD_EXIT: programCounter = program.length; break;
+
+                case HEAD_CALL: call(); break;
+                case HEAD_RETURN: functionReturn(); break;
+                case HEAD_ALLOC: alloc((int) readProgram(4)); break;
             }
         }
     }
 
     public void load(int length) {
         int memoryLocation = (int) readProgram(4);
-        long value = ByteArrays.read(memory, memoryLocation, length);
+        long value = memoryRead(memoryLocation, length);
         push(length, value);
     }
 
     public void save(int length) {
         int memoryLocation = (int) readProgram(4);
         long value = peek(length);
-        ByteArrays.write(memory, memoryLocation, length, value);
+        memoryWrite(memoryLocation, length, value);
     }
 
     public void cast(int originType, int targetType) {
         // TODO
+    }
+
+    public void call() {
+        int functionId = (int) pop(4);
+        if (nativeFunctions.containsKey(functionId)) {
+            nativeFunctions.get(functionId).accept(this);
+        } else {
+            callStack.push(programCounter);
+            callStack.push(memoryOffset);
+            callStack.push(memoryAllocStart);
+            programCounter = functionId;
+            memoryOffset = memoryAllocStart;
+        }
+    }
+
+    public void functionReturn() {
+        memoryAllocStart = callStack.pop();
+        memoryOffset = callStack.pop();
+        programCounter = callStack.pop();
+    }
+
+    public void alloc(int size) {
+        memoryOffset = memoryAllocStart;
+        memoryAllocStart += size;
     }
 
     public void mathematics(byte head, byte flags) {
@@ -114,7 +171,7 @@ public class RSIOExecutor {
 
         long leftOperand = pop(operandLength);
 
-        if (head == Instructions.HEAD_NEG) {
+        if (head == Instruction.HEAD_NEG) {
             push(operandLength, Convert.convert(-pop(operandLength), operandLength));
             return;
         }
@@ -123,12 +180,12 @@ public class RSIOExecutor {
 
         long result = 0;
         switch (head) {
-            case Instructions.HEAD_PLUS: result = leftOperand + rightOperand; break;
+            case Instruction.HEAD_PLUS: result = leftOperand + rightOperand; break;
             case HEAD_SUB: result = leftOperand - rightOperand; break;
-            case Instructions.HEAD_MUL: result = leftOperand * rightOperand; break;
-            case Instructions.HEAD_DIV: result = leftOperand / rightOperand; break;
-            case Instructions.HEAD_MOD: result = leftOperand % rightOperand; break;
-            case Instructions.HEAD_POW: result = (long) Math.pow(leftOperand, rightOperand); break;
+            case Instruction.HEAD_MUL: result = leftOperand * rightOperand; break;
+            case Instruction.HEAD_DIV: result = leftOperand / rightOperand; break;
+            case Instruction.HEAD_MOD: result = leftOperand % rightOperand; break;
+            case Instruction.HEAD_POW: result = (long) Math.pow(leftOperand, rightOperand); break;
         }
 
         push(operandLength, Convert.convert(result, operandLength));
@@ -142,12 +199,12 @@ public class RSIOExecutor {
 
         boolean result = false;
         switch (head) {
-            case Instructions.HEAD_EQ: result = leftOperand == rightOperand; break;
-            case Instructions.HEAD_NE: result = leftOperand != rightOperand; break;
-            case Instructions.HEAD_GT: result = leftOperand > rightOperand; break;
-            case Instructions.HEAD_LT: result = leftOperand < rightOperand; break;
-            case Instructions.HEAD_GE: result = leftOperand >= rightOperand; break;
-            case Instructions.HEAD_LE:  result = leftOperand <= rightOperand; break;
+            case Instruction.HEAD_EQ: result = leftOperand == rightOperand; break;
+            case Instruction.HEAD_NE: result = leftOperand != rightOperand; break;
+            case Instruction.HEAD_GT: result = leftOperand > rightOperand; break;
+            case Instruction.HEAD_LT: result = leftOperand < rightOperand; break;
+            case Instruction.HEAD_GE: result = leftOperand >= rightOperand; break;
+            case Instruction.HEAD_LE:  result = leftOperand <= rightOperand; break;
         }
 
         push(1, result ? 1 : 0);
@@ -158,7 +215,7 @@ public class RSIOExecutor {
 
         long leftOperand = pop(operandLength);
 
-        if (head == Instructions.HEAD_NOT) {
+        if (head == Instruction.HEAD_NOT) {
             push(1, pop(1) == 0 ? 1 : 0);
             return;
         }
@@ -167,9 +224,9 @@ public class RSIOExecutor {
 
         boolean result = false;
         switch (head) {
-            case Instructions.HEAD_AND: result = leftOperand == rightOperand; break;
-            case Instructions.HEAD_OR: result = leftOperand != rightOperand; break;
-            case Instructions.HEAD_GT: result = leftOperand > rightOperand; break;
+            case Instruction.HEAD_AND: result = leftOperand == rightOperand; break;
+            case Instruction.HEAD_OR: result = leftOperand != rightOperand; break;
+            case Instruction.HEAD_GT: result = leftOperand > rightOperand; break;
         }
 
         push(1, result ? 1 : 0);
