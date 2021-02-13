@@ -6,6 +6,7 @@ import top.riverelder.rsio.core.compile.CompileEnvironment;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
+import top.riverelder.rsio.core.util.AssembleUtils;
 import top.riverelder.rsio.core.util.BufferedStringBuilder;
 
 import java.util.List;
@@ -40,6 +41,7 @@ public class If extends AST {
     @Override
     public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException {
         condition.toAssemble(output, env);
+        AssembleUtils.checkAndCast(output, condition.getDataType(env), DataType.BOOLEAN);
         if (ifFalseValue != null) {
             String falseStartLabel = String.format("L%d", env.countLabel());
             String endLabel = String.format("L%d", env.countLabel());

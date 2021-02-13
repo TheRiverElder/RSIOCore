@@ -1,5 +1,6 @@
 package top.riverelder.rsio.core.bytecode;
 
+import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.util.ByteArrays;
 import top.riverelder.rsio.core.util.Convert;
 
@@ -36,7 +37,7 @@ public class RSIOExecutor {
 
     public long readProgram(int length) {
         long value = ByteArrays.read(program, programCounter, length);
-        stackPointer += length;
+        programCounter += length;
         return value;
     }
 
@@ -87,7 +88,7 @@ public class RSIOExecutor {
 
             switch (head) {
                 case HEAD_NOP: break;
-                case HEAD_CAST: cast(flags & 0xF0, flags & 0x0F); break;
+                case HEAD_CAST: cast((Byte.toUnsignedInt(flags) & 0xF0) >>> 4, flags & 0x0F); break;
                 case HEAD_LOAD: load(flags); break;
                 case HEAD_SAVE: save(flags); break;
 
@@ -114,8 +115,9 @@ public class RSIOExecutor {
 
                 case HEAD_JMP: programCounter = (int) readProgram(4); break;
                 case HEAD_IZJ:
-                    if (pop(getLength(flags)) == 0) {
-                        programCounter = (int) readProgram(4);
+                    int target = (int) readProgram(4);
+                    if (pop(1) == 0) {
+                        programCounter = target;
                     } break;
                 case HEAD_EXIT: programCounter = program.length; break;
 
@@ -136,10 +138,13 @@ public class RSIOExecutor {
         int memoryLocation = (int) readProgram(4);
         long value = peek(length);
         memoryWrite(memoryLocation, length, value);
+//        ByteArrays.copy(stack, stackPointer - length, memory, memoryLocation + memoryOffset, length);
     }
 
     public void cast(int originType, int targetType) {
-        // TODO
+        if (DataType.INTEGER.code == originType && targetType == DataType.BOOLEAN.code) {
+            push(1, pop(4) == 0 ? 0 : 1);
+        }
     }
 
     public void call() {
@@ -169,14 +174,13 @@ public class RSIOExecutor {
     public void mathematics(byte head, byte flags) {
         int operandLength = getLength(flags);
 
-        long leftOperand = pop(operandLength);
-
         if (head == Instruction.HEAD_NEG) {
             push(operandLength, Convert.convert(-pop(operandLength), operandLength));
             return;
         }
 
         long rightOperand = isInstant(flags) ? readProgram(operandLength) : pop(operandLength);
+        long leftOperand = pop(operandLength);
 
         long result = 0;
         switch (head) {
@@ -194,8 +198,8 @@ public class RSIOExecutor {
     public void compare(byte head, byte flags) {
         int operandLength = getLength(flags);
 
-        long leftOperand = pop(operandLength);
         long rightOperand = isInstant(flags) ? readProgram(operandLength) : pop(operandLength);
+        long leftOperand = pop(operandLength);
 
         boolean result = false;
         switch (head) {
@@ -213,14 +217,13 @@ public class RSIOExecutor {
     public void logic(byte head, byte flags) {
         int operandLength = getLength(flags);
 
-        long leftOperand = pop(operandLength);
-
         if (head == Instruction.HEAD_NOT) {
             push(1, pop(1) == 0 ? 1 : 0);
             return;
         }
 
         long rightOperand = isInstant(flags) ? readProgram(operandLength) : pop(operandLength);
+        long leftOperand = pop(operandLength);
 
         boolean result = false;
         switch (head) {

@@ -4,12 +4,16 @@ import top.riverelder.rsio.core.compile.DataType;
 
 public class ByteArrays {
 
+    public static void copy(byte[] origin, int originStartIndex, byte[] destination, int destinationStartIndex, int length) {
+        if (length >= 0) System.arraycopy(origin, originStartIndex, destination, destinationStartIndex, length);
+    }
+
     //region read bytes
 
     public static long read(byte[] bytes, int startIndex, int byteCount) {
         long value = 0;
         for (int i = 0; i < byteCount; i++) {
-            value = (value << i * Byte.SIZE) | Byte.toUnsignedInt(bytes[startIndex++]);
+            value = (value << Byte.SIZE) | Byte.toUnsignedInt(bytes[startIndex + i]);
         }
         return value;
     }
@@ -21,7 +25,7 @@ public class ByteArrays {
     public static short read16(byte[] bytes, int startIndex) {
         int value = 0;
         for (int i = 0; i < 2; i++) {
-            value = (value << i * Byte.SIZE) | Byte.toUnsignedInt(bytes[startIndex++]);
+            value = (value << Byte.SIZE) | Byte.toUnsignedInt(bytes[startIndex + i]);
         }
         return (short) value;
     }
@@ -29,7 +33,7 @@ public class ByteArrays {
     public static int read32(byte[] bytes, int startIndex) {
         int value = 0;
         for (int i = 0; i < 4; i++) {
-            value = (value << i * Byte.SIZE) | Byte.toUnsignedInt(bytes[startIndex++]);
+            value = (value << Byte.SIZE) | Byte.toUnsignedInt(bytes[startIndex + i]);
         }
         return value;
     }
@@ -37,7 +41,7 @@ public class ByteArrays {
     public static long read64(byte[] bytes, int startIndex) {
         long value = 0;
         for (int i = 0; i < 8; i++) {
-            value = (value << i * Byte.SIZE) | Byte.toUnsignedInt(bytes[startIndex++]);
+            value = (value << Byte.SIZE) | Byte.toUnsignedInt(bytes[startIndex + i]);
         }
         return value;
     }
@@ -80,9 +84,9 @@ public class ByteArrays {
 
     public static void print(byte[] bytes, int bytesInOneLine) {
         for (int i = 0; i < bytes.length;) {
-            System.out.printf("%4d: ", i / bytesInOneLine);
-            for (int j = 0; j < bytesInOneLine; j++) {
-                System.out.printf("  %02x", bytes[i + j]);
+            System.out.printf("%4d: ", i);
+            for (int j = 0; j < bytesInOneLine && (i + j) < bytes.length; j++) {
+                System.out.printf("  %02X", bytes[i + j]);
             }
             i += bytesInOneLine;
             System.out.println();

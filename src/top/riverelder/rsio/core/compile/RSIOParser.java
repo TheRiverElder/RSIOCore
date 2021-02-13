@@ -66,7 +66,7 @@ public class RSIOParser {
         if ((ast = parseFunctionDefine()) != null) return ast;
         if ((
                 (ast = parseFieldDefine()) != null || (ast = parseValuable()) != null
-        ) && reader.tryRead(";")) return ast;
+        ) && reader.tryRead(";")) return new Statement(ast.getPosition(), ast);
         reader.setCursor(start);
         return null;
     }

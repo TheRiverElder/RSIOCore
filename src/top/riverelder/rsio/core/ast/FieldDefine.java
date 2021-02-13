@@ -43,6 +43,7 @@ public class FieldDefine extends AST {
         env.createField(name, dataType, constant);
         if (initialValue != null) {
             initialValue.toAssemble(output, env);
+            output.add(String.format("  save.%d", dataType.length));
         }
     }
 }

@@ -5,6 +5,7 @@ import top.riverelder.rsio.core.compile.CompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
+import top.riverelder.rsio.core.util.AssembleUtils;
 import top.riverelder.rsio.core.util.BufferedStringBuilder;
 
 import java.util.List;
@@ -28,12 +29,15 @@ public class UnaryExpression extends AST {
 
     @Override
     public DataType getDataType(CompileEnvironment env) throws RSIOCompileException {
-        return operand.getDataType(env);
+        return operator == Operator.NOT ? DataType.BOOLEAN : operand.getDataType(env);
     }
 
     @Override
     public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException {
         operand.toAssemble(output, env);
-        output.add(String.format("  %s %d", operator.getAsmHead(), operand.getDataType(env).code));
+        if (operator == Operator.NOT) {
+            AssembleUtils.checkAndCast(output, operand.getDataType(env), DataType.BOOLEAN);
+        }
+        output.add(String.format("  %s.%d", operator.getAsmHead(), operand.getDataType(env).length));
     }
 }

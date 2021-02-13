@@ -18,5 +18,6 @@ L0:
   push.4 1
   sub.4
   save.4 12
+  pop.4
   jmp L0
 L1:

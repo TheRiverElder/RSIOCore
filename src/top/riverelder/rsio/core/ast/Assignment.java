@@ -7,6 +7,7 @@ import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.compile.Field;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
+import top.riverelder.rsio.core.util.AssembleUtils;
 import top.riverelder.rsio.core.util.BufferedStringBuilder;
 
 import java.util.List;
@@ -44,7 +45,7 @@ public class Assignment extends AST {
         if (field.isConstant) throw new RSIOCompileException("Cannot modify a constant field: " + this.field, this.getPosition());
 
         value.toAssemble(output, env);
-        output.add("  push 4, " + field.position);
-        output.add("  save");
+        AssembleUtils.checkAndCast(output, value.getDataType(env), field.type);
+        output.add(String.format("  save.%d %d", field.type.length, field.position));
     }
 }

@@ -43,14 +43,13 @@ public class PrimitiveValue extends AST {
     @Override
     public void toAssemble(List<String> output, CompileEnvironment env) throws RSIOCompileException {
         switch (token.getType()) {
-            case INTEGER:output.add(String.format("  push %d, %d", DataType.INTEGER.length, (Integer) token.getContent())); break;
-            case DECIMAL:output.add(String.format("  push %d, %f", DataType.DECIMAL.length, (Double) token.getContent())); break;
-            case BOOLEAN: output.add(String.format("  push %d, %d", DataType.BOOLEAN.length, (Boolean) token.getContent() ? 1 : 0)); break;
+            case INTEGER:output.add(String.format("  push.%d %d", DataType.INTEGER.length, (Integer) token.getContent())); break;
+            case DECIMAL:output.add(String.format("  push.%d %f", DataType.DECIMAL.length, (Double) token.getContent())); break;
+            case BOOLEAN: output.add(String.format("  push.%d %d", DataType.BOOLEAN.length, (Boolean) token.getContent() ? 1 : 0)); break;
             case FIELD_NAME:
                 Field field = env.getField((String) token.getContent());
                 if (field == null) throw new RSIOCompileException("Undefined variable: " + token.getContent(), token.getPosition());
-                output.add(String.format("  push %d, %d", DataType.ADDRESS_LENGTH, field.position));
-                output.add("  load " + field.type.length);
+                output.add(String.format("  load.%d %d", field.type.length, field.position));
                 break;
             case STRING: break;
             default: break;

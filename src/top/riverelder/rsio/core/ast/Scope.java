@@ -40,9 +40,7 @@ public class Scope extends AST {
         while (statementIterator.hasNext()) {
             AST statement = statementIterator.next();
             statement.toAssemble(output, env);
-            if (statementIterator.hasNext()) {
-                output.add("  pop " + statement.getDataType(env).code);
-            }
+//            if (statementIterator.hasNext()) { }
         }
     }
 }

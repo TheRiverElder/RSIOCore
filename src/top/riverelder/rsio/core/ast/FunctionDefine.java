@@ -58,9 +58,9 @@ public class FunctionDefine extends AST {
         FunctionInfo info = new FunctionInfo(name, resultDataType, parameterDataTypes);
         env.createFunctionField(name, info, false);
 
-        output.add("sect " + name + ":");
+        output.add("sect " + name);
         body.toAssemble(output, bodyEnv);
-        output.add("end " + name);
+        output.add("end");
     }
 
     @Override

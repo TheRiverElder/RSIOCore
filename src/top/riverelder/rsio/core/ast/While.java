@@ -4,6 +4,7 @@ import top.riverelder.rsio.core.compile.CompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
+import top.riverelder.rsio.core.util.AssembleUtils;
 import top.riverelder.rsio.core.util.BufferedStringBuilder;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class While extends AST {
         String endLabel = String.format("L%d", env.countLabel());
         output.add(startLabel + ":");
         condition.toAssemble(output, env);
+        AssembleUtils.checkAndCast(output, condition.getDataType(env), DataType.BOOLEAN);
         output.add("  izj " + endLabel);
         body.toAssemble(output, env);
         output.add("  jmp " + startLabel);

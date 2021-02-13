@@ -5,6 +5,7 @@ import top.riverelder.rsio.core.compile.CompileEnvironment;
 import top.riverelder.rsio.core.compile.DataType;
 import top.riverelder.rsio.core.compile.NestedCompileEnvironment;
 import top.riverelder.rsio.core.exception.RSIOCompileException;
+import top.riverelder.rsio.core.util.AssembleUtils;
 import top.riverelder.rsio.core.util.BufferedStringBuilder;
 
 import java.util.List;
@@ -40,6 +41,7 @@ public class TrinaryExpression extends AST {
         DataType finalDataType = DataType.getHigher(trueValueDataType, falseValueDataType);
 
         condition.toAssemble(output, env);
+        AssembleUtils.checkAndCast(output, condition.getDataType(env), DataType.BOOLEAN);
 
         String falseStartLabel = String.format("L%d", env.countLabel());
         String endLabel = String.format("L%d", env.countLabel());
@@ -47,17 +49,13 @@ public class TrinaryExpression extends AST {
         output.add("  izj " + falseStartLabel);
 
         trueValue.toAssemble(output, env);
-        if (DataType.getHigher(trueValueDataType, finalDataType) != trueValueDataType) {
-            output.add(String.format("  cast %d, %d", trueValueDataType.code, finalDataType.code));
-        }
+        AssembleUtils.checkAndCast(output, trueValueDataType, finalDataType);
 
         output.add("  jmp " + endLabel);
 
         output.add(falseStartLabel + ":");
         falseValue.toAssemble(output, env);
-        if (DataType.getHigher(falseValueDataType, finalDataType) != falseValueDataType) {
-            output.add(String.format("  cast %d, %d", falseValueDataType.code, finalDataType.code));
-        }
+        AssembleUtils.checkAndCast(output, falseValueDataType, finalDataType);
 
         output.add(endLabel + ":");
     }

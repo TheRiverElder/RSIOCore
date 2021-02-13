@@ -13,6 +13,7 @@ import top.riverelder.rsio.core.util.*;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +21,10 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
-//        testCompiler();
 //        testConvert();
-        testAssemble();
+        String name = "code_01";
+        testCompiler(name);
+        testAssemble(name);
     }
 
     public static void testConvert() {
@@ -47,8 +49,8 @@ public class Main {
         }
     }
 
-    public static void testCompiler() {
-        String code = readFile("code_04.txt");
+    public static void testCompiler(String name) {
+        String code = readFile(name + ".rsio");
 
         System.out.println("====CODE====");
         System.out.println(code);
@@ -87,6 +89,8 @@ public class Main {
             List<String> assembleCodes = new ArrayList<>();
             program.toAssemble(assembleCodes, env);
             assembleCodes.forEach(System.out::println);
+            String assemble = String.join("\n", assembleCodes);
+            writeFile(name + ".rsio.asm", assemble);
 
 //            byte[] bytes = RSIO.compile(code, env);
 //
@@ -105,9 +109,9 @@ public class Main {
         }
     }
 
-    public static void testAssemble() {
+    public static void testAssemble(String name) {
         Assembler assembler = new Assembler();
-        byte[] bytecode = assembler.toBytes(readFile("asm_01.txt"));
+        byte[] bytecode = assembler.toBytes(readFile(name + ".rsio.asm"));
         ByteArrays.print(bytecode, 4);
         RSIOExecutor executor = new RSIOExecutor();
         executor.initialize(bytecode, 32, 32);
@@ -128,5 +132,13 @@ public class Main {
             e.printStackTrace();
         }
         return builder.toString();
+    }
+
+    public static void writeFile(String fileName, String data) {
+        try (FileWriter writer = new FileWriter("./test/" + fileName)) {
+            writer.write(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
